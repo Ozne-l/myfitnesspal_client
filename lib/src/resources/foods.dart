@@ -1,0 +1,59 @@
+import 'package:myfitnesspal_client/src/decoding.dart';
+import 'package:myfitnesspal_client/src/http_method.dart';
+import 'package:myfitnesspal_client/src/models/food.dart';
+import 'package:myfitnesspal_client/src/requests/food_search_hit.dart';
+import 'package:myfitnesspal_client/src/requests/food_search_query.dart';
+import 'package:myfitnesspal_client/src/requests/food_search_response.dart';
+import 'package:myfitnesspal_client/src/requests/foods_query.dart';
+import 'package:myfitnesspal_client/src/requests/foods_response.dart';
+import 'package:myfitnesspal_client/src/requests/search_scope.dart';
+import 'package:myfitnesspal_client/src/transport.dart';
+
+final class MfpFoods {
+  const MfpFoods(this._transport);
+
+  static const _search = '/v2/search/nutrition';
+  static const _foods = '/v2/foods';
+  static const defaultMaxResults = 25;
+
+  final MfpTransport _transport;
+
+  Future<List<MfpFood>> search(
+    String query, {
+    int maxResults = defaultMaxResults,
+    bool verifiedOnly = false,
+    String? countryCode,
+  }) async {
+    final response = FoodSearchResponseMapper.fromMap(
+      asMap(
+        await _transport.request(
+          HttpMethod.get,
+          _search,
+          query: FoodSearchQuery(
+            q: query,
+            scope: verifiedOnly ? SearchScope.verified : SearchScope.all,
+            maxItems: maxResults,
+            countryCode: countryCode?.toUpperCase(),
+          ).toMap(),
+        ),
+      ),
+    );
+    return [
+      for (final hit in response.items)
+        ...switch (hit) {
+          FoodHit(:final item) => [item],
+          OtherHit() => const <MfpFood>[],
+        },
+    ];
+  }
+
+  Future<MfpFood?> byId(String id) async => FoodsResponseMapper.fromMap(
+    asMap(
+      await _transport.request(
+        HttpMethod.get,
+        _foods,
+        query: FoodsQuery(ids: id).toMap(),
+      ),
+    ),
+  ).items.firstOrNull;
+}
