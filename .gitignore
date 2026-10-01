@@ -1,0 +1,13 @@
+# https://dart.dev/tools/pub/private-files
+.dart_tool/
+pubspec.lock
+
+# Browser cookies are your MyFitnessPal session - never commit them
+.env
+cookies.txt
+*.cookies.txt
+
+# Raw traffic captures contain cookies and tokens
+*.flow
+*.har
+captures/
