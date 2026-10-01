@@ -1,0 +1,59 @@
+{
+  "items": [
+    {
+      "type": "food_entry",
+      "id": "3F2A6C1E-0B7D-4E5A-9C11-7D2B8E4F0A01",
+      "date": "2026-10-01",
+      "meal_name": "Breakfast",
+      "meal_position": 0,
+      "servings": 1.5,
+      "serving_size": {"value": 100, "unit": "g", "nutrition_multiplier": 1},
+      "food": {
+        "id": "100000001",
+        "version": "200000001",
+        "description": "Flocons d'avoine",
+        "brand_name": null
+      },
+      "nutritional_contents": {
+        "energy": {"unit": "calories", "value": 559.5},
+        "protein": 20.1,
+        "carbohydrates": 90,
+        "net_carbs": 75,
+        "fiber": 15,
+        "fat": 10.5,
+        "sodium": 3
+      }
+    },
+    {
+      "type": "food_entry",
+      "date": "2026-10-01",
+      "meal_name": "Lunch",
+      "meal_position": 1,
+      "servings": 2,
+      "serving_size": {"value": 1, "unit": "pot (125 g)"},
+      "food": {
+        "id": "100000002",
+        "description": "Yaourt nature",
+        "brand_name": "Marque Exemple"
+      },
+      "nutritional_contents": {
+        "energy": {"unit": "kilojoules", "value": 836.8}
+      }
+    },
+    {
+      "type": "diary_meal",
+      "date": "2026-10-01",
+      "diary_meal": "Breakfast",
+      "nutritional_contents": {
+        "energy": {"unit": "calories", "value": 559.5},
+        "protein": 20.1
+      }
+    },
+    {
+      "type": "exercise_entry",
+      "id": "ex-1",
+      "date": "2026-10-01",
+      "duration": 1800
+    }
+  ]
+}

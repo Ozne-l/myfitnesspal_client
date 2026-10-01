@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "type": "food",
+      "tags": ["best_match"],
+      "item": {
+        "id": "100000003",
+        "version": "200000003",
+        "description": "Riz basmati, cuit",
+        "brand_name": "Marque Exemple",
+        "verified": true,
+        "serving_sizes": [
+          {"value": 100, "unit": "g", "nutrition_multiplier": 1},
+          {"value": 1, "unit": "tasse", "nutrition_multiplier": 1.58}
+        ],
+        "nutritional_contents": {
+          "energy": {"unit": "calories", "value": 130},
+          "carbohydrates": 28.2,
+          "protein": 2.7,
+          "fat": 0.3
+        }
+      }
+    },
+    {
+      "type": "venue",
+      "item": {"id": "venue-1", "name": "Restaurant"}
+    }
+  ]
+}

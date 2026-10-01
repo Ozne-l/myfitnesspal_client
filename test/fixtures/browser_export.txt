@@ -1,0 +1,7 @@
+# Netscape HTTP Cookie File
+# This is a generated file! Do not edit.
+
+.myfitnesspal.com	TRUE	/	TRUE	1800000000	mfp_locale	fr
+#HttpOnly_www.myfitnesspal.com	FALSE	/	TRUE	1800000000	__Secure-next-auth.session-token	fake.session=value
+community.myfitnesspal.com	FALSE	/	TRUE	1800000000	forum_session	not-for-www
+.example.com	TRUE	/	FALSE	1800000000	other	site
