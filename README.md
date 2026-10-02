@@ -127,7 +127,9 @@ Every deliberate error is an `MfpException`:
 
 - `MfpAuthException`: `notSignedIn`, `noSessionCookie` (the cookies you
   passed contain no session), or `sessionExpired` (the session was rejected
-  and has been cleared).
+  and has been cleared). Its `errors` list each request made while asking
+  for a token: status, path, redirect target and the names of the cookies
+  the website set.
 - `MfpApiException`: any other error status, with the server's messages.
   A `403` on `/user/auth_token` usually means the website's bot protection
   blocked the request: retry with your browser's user agent as `userAgent`.

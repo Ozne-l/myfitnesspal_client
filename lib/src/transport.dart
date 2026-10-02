@@ -27,6 +27,9 @@ final class MfpTransport {
   static const _webClientId = 'mfp-main-js';
   static const _jsonMediaType = 'application/json';
   static const _expiryMargin = Duration(minutes: 1);
+  static const _maxAuthHops = 5;
+  static const _locationHeader = 'location';
+  static const _setCookieHeader = 'set-cookie';
 
   final http.Client _httpClient;
   final MfpSessionStore _sessionStore;
@@ -41,8 +44,9 @@ final class MfpTransport {
     if (!cookies.hasSession) {
       throw const MfpAuthException(MfpAuthFailure.noSessionCookie);
     }
-    _access = await _fetchAccess(cookies);
-    await _sessionStore.write(cookies);
+    final access = await _fetchAccess(cookies);
+    _access = access;
+    await _sessionStore.write(access.cookies);
   }
 
   Future<void> clearSession() async {
@@ -98,46 +102,97 @@ final class MfpTransport {
         _clock().add(_expiryMargin).isBefore(cached.expiresAt)) {
       return cached;
     }
-    return _fetching ??= _fetchAccess(
-      cookies,
-    ).then((access) => _access = access).whenComplete(() => _fetching = null);
+    return _fetching ??= _fetchAccess(cookies)
+        .then((access) => _keep(access, cookies))
+        .whenComplete(() => _fetching = null);
+  }
+
+  Future<ApiAccess> _keep(ApiAccess access, MfpSessionCookies sent) async {
+    if (access.cookies != sent) await _sessionStore.write(access.cookies);
+    return _access = access;
   }
 
   Future<ApiAccess> _fetchAccess(MfpSessionCookies cookies) async {
-    final request =
-        http.Request(
-            HttpMethod.get.verb,
-            _webUri.replace(
-              path: _authTokenPath,
-              queryParameters: _stringify(const AuthTokenQuery().toMap()),
-            ),
-          )
-          ..headers.addAll({
-            'accept': _jsonMediaType,
-            'cookie': cookies.header,
-            'user-agent': _userAgent,
-          });
-    final exchange = await _send(request);
+    var uri = _webUri.replace(
+      path: _authTokenPath,
+      queryParameters: _stringify(const AuthTokenQuery().toMap()),
+    );
+    var current = cookies;
+    final trail = <String>[];
+    for (var hop = 0; hop < _maxAuthHops; hop++) {
+      final exchange = await _send(_authRequest(uri, current));
+      final response = exchange.response;
+      final setCookies = response.headersSplitValues[_setCookieHeader] ?? [];
+      current = current.withSetCookies(setCookies);
+      trail.add(_describeHop(uri, response, setCookies));
+      final next = _webRedirect(uri, response);
+      if (next == null) return _accessFrom(exchange, cookies, current, trail);
+      uri = next;
+    }
+    return _expire(cookies, trail);
+  }
+
+  http.Request _authRequest(Uri uri, MfpSessionCookies cookies) =>
+      http.Request(HttpMethod.get.verb, uri)
+        ..followRedirects = false
+        ..headers.addAll({
+          'accept': _jsonMediaType,
+          'cookie': cookies.header,
+          'user-agent': _userAgent,
+        });
+
+  Uri? _webRedirect(Uri from, http.Response response) {
+    final location = response.headers[_locationHeader];
+    if (location == null || response.statusCode ~/ 100 != 3) return null;
+    final target = from.resolve(location);
+    return target.host == _webUri.host ? target : null;
+  }
+
+  Future<ApiAccess> _accessFrom(
+    _Exchange exchange,
+    MfpSessionCookies sent,
+    MfpSessionCookies current,
+    List<String> trail,
+  ) async {
     final response = exchange.response;
     final isJson = _isJson(response);
     switch (response.statusCode) {
       case 401:
+      case >= 300 && < 400:
       case >= 200 && < 300 when !isJson:
-        await _forget(cookies);
-        throw MfpAuthException(
-          MfpAuthFailure.sessionExpired,
-          isJson ? _errorMessages(response) : const [],
-        );
+        return _expire(sent, [
+          ...trail,
+          if (isJson) ..._errorMessages(response),
+        ]);
     }
     final token = AuthTokenResponseMapper.fromMap(
       asMap(_decodeOrThrow(exchange)),
     );
     return ApiAccess(
-      cookies: cookies,
+      cookies: current,
       authorization: '${token.tokenType} ${token.accessToken}',
       userId: token.userId,
       expiresAt: _clock().add(Duration(seconds: token.expiresIn)),
     );
+  }
+
+  Future<Never> _expire(MfpSessionCookies cookies, List<String> errors) async {
+    await _forget(cookies);
+    throw MfpAuthException(MfpAuthFailure.sessionExpired, errors);
+  }
+
+  static String _describeHop(
+    Uri uri,
+    http.Response response,
+    List<String> setCookies,
+  ) {
+    final location = response.headers[_locationHeader];
+    final names = [for (final c in setCookies) c.split('=').first.trim()];
+    return [
+      '${response.statusCode} ${uri.path}',
+      if (location != null) '-> $location',
+      if (names.isNotEmpty) '(set-cookie: ${names.join(', ')})',
+    ].join(' ');
   }
 
   Future<void> _forget(MfpSessionCookies cookies) async {

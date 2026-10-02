@@ -8,6 +8,13 @@ import 'package:test/test.dart';
 import 'support/fake_mfp.dart';
 
 const _foods = 'GET api.myfitnesspal.com /v2/foods';
+const _login = 'GET www.myfitnesspal.com /account/login';
+
+http.Response _redirect(String location, {String? setCookie}) => http.Response(
+  '',
+  302,
+  headers: {'location': location, 'set-cookie': ?setCookie},
+);
 
 http.Response _loginPage({int status = 200}) => http.Response(
   '<html><body>Log in</body></html>',
@@ -102,6 +109,79 @@ void main() {
           .has((e) => e.failure, 'failure')
           .equals(MfpAuthFailure.sessionExpired),
     );
+    check(await fake.client.isSignedIn).isFalse();
+  });
+
+  test('a token request bounced through the login page signs in with the '
+      'cookies set on the way, and keeps them', () async {
+    const refreshed = 'route=refreshed';
+    final fake = FakeMfp({
+      authToken: (request) => switch (request.headers['cookie']) {
+        final String cookie when cookie.contains(refreshed) => token(),
+        _ => _redirect('/account/login?callbackUrl=x'),
+      },
+      _login: (_) => _redirect(
+        'https://www.myfitnesspal.com/user/auth_token?refresh=true',
+        setCookie: '$refreshed; Path=/user; Secure; HttpOnly',
+      ),
+      _foods: (_) => json({'items': <Object>[]}),
+    });
+
+    await fake.signIn();
+    await fake.client.foods.byId('1');
+
+    check(
+      fake.requests
+          .where((r) => r.url.host == 'www.myfitnesspal.com')
+          .map((r) => r.followRedirects),
+    ).every(
+      (it) => it.isFalse(),
+    );
+    check(
+      fake.to('GET', 'api.myfitnesspal.com', '/v2/foods').single.headers,
+    )['authorization'].equals('Bearer access-1');
+    check(await fake.sessionStore.read())
+        .isNotNull()
+        .has(
+          (cookies) => cookies.values,
+          'values',
+        )
+        .deepEquals({...sessionCookies.values, 'route': 'refreshed'});
+  });
+
+  test('a redirect to the login page that stays there means the session is '
+      'over, and says where it was sent', () async {
+    final fake = FakeMfp({
+      authToken: (_) => _redirect('/account/login?callbackUrl=x'),
+      _login: (_) => _loginPage(),
+    });
+    await fake.sessionStore.write(sessionCookies);
+
+    await check(fake.client.foods.byId('1')).throws<MfpAuthException>(
+      (e) => e
+        ..has((e) => e.failure, 'failure').equals(MfpAuthFailure.sessionExpired)
+        ..has((e) => e.errors, 'errors').deepEquals([
+          '302 /user/auth_token -> /account/login?callbackUrl=x',
+          '200 /account/login',
+        ]),
+    );
+    check(await fake.client.isSignedIn).isFalse();
+  });
+
+  test('a token request that keeps bouncing gives up as an expired '
+      'session', () async {
+    final fake = FakeMfp({
+      authToken: (_) => _redirect('/account/login?callbackUrl=x'),
+      _login: (_) => _redirect('/user/auth_token?refresh=true'),
+    });
+    await fake.sessionStore.write(sessionCookies);
+
+    await check(fake.client.foods.byId('1')).throws<MfpAuthException>(
+      (e) => e
+          .has((e) => e.failure, 'failure')
+          .equals(MfpAuthFailure.sessionExpired),
+    );
+    check(fake.requests).length.equals(5);
     check(await fake.client.isSignedIn).isFalse();
   });
 

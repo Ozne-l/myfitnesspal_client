@@ -48,6 +48,34 @@ class MfpSessionCookies with MfpSessionCookiesMappable {
     for (final MapEntry(:key, :value) in values.entries) '$key=$value',
   ].join('; ');
 
+  MfpSessionCookies withSetCookies(Iterable<String> setCookies) {
+    final merged = {...values};
+    for (final setCookie in setCookies) {
+      if (setCookie.split(';') case [final pair, ...final attributes]) {
+        if (pair.split('=') case [
+          final rawName,
+          ...final valueParts,
+        ] when valueParts.isNotEmpty && rawName.trim().isNotEmpty) {
+          final name = rawName.trim();
+          final value = valueParts.join('=').trim();
+          switch (value.isEmpty || attributes.any(_isExpiry)) {
+            case true:
+              merged.remove(name);
+            case false:
+              merged[name] = value;
+          }
+        }
+      }
+    }
+    return MfpSessionCookies(merged);
+  }
+
+  static bool _isExpiry(String attribute) =>
+      switch (attribute.trim().toLowerCase().split('=')) {
+        ['max-age', final seconds] => (int.tryParse(seconds) ?? 1) <= 0,
+        _ => false,
+      };
+
   static List<String> _cookieFields(String rawLine) {
     final line = rawLine.trimRight();
     return switch (line) {

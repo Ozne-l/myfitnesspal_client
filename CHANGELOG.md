@@ -1,3 +1,12 @@
+## Unreleased
+
+- Signing in follows the website when `/user/auth_token` bounces through the
+  login page, and keeps the cookies it sets on the way, as a browser does.
+  Before, this ended in an HTTP client "redirect loop" error.
+- A session the website still rejects throws
+  `MfpAuthException(sessionExpired)` listing each step (status, path, redirect
+  target, names of the cookies set).
+
 ## 0.1.0
 
 - Sign in with the cookies of a browser session (cookies.txt export or a
