@@ -123,19 +123,23 @@ cookies; the session stays valid until you sign out in the browser.
 
 ### Errors
 
-Every deliberate error is an `MfpException`:
+Every failure is an `MfpException`, a sealed class: `switch` over it to show
+one message per case. Its `errors` carry the details for your logs.
 
-- `MfpAuthException`: `notSignedIn`, `noSessionCookie` (the cookies you
-  passed contain no session), or `sessionExpired` (the session was rejected
-  and has been cleared). Its `errors` list each request made while asking
-  for a token: status, path, redirect target and the names of the cookies
-  the website set.
-- `MfpApiException`: any other error status, with the server's messages.
-  A `403` on `/user/auth_token` usually means the website's bot protection
-  blocked the request: retry with your browser's user agent as `userAgent`.
+| Exception | When | What to tell the user |
+|---|---|---|
+| `MfpAuthException(notSignedIn)` | no stored session | sign in |
+| `MfpAuthException(noSessionCookie)` | the cookies passed to `signIn` hold no session | sign in again |
+| `MfpAuthException(sessionExpired)` | MyFitnessPal ended the session; the stored cookies are cleared | sign in again |
+| `MfpApiException` | an error status (`statusCode`), with the server's messages | MyFitnessPal refused the request |
+| `MfpNetworkException` | no connection, DNS failure, connection lost; the session is kept | check the connection and retry |
+| `MfpUnexpectedResponseException` | a response this client cannot read: not JSON, a missing field | MyFitnessPal changed something; update the app |
 
-Network failures surface as `http.ClientException`, and a response this
-client cannot decode as a `MapperException`.
+`MfpAuthException(sessionExpired)` lists each request made while asking for
+a token: status, path, redirect target and the names of the cookies the
+website set. A `403` on `/user/auth_token` (an `MfpApiException`) usually
+means the website's bot protection blocked the request: retry with your
+browser's user agent as `userAgent`.
 
 ## Try it
 

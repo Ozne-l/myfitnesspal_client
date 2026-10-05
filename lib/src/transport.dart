@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dart_mappable/dart_mappable.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:myfitnesspal_client/src/auth/api_access.dart';
 import 'package:myfitnesspal_client/src/auth/session_cookies.dart';
@@ -56,21 +58,23 @@ final class MfpTransport {
 
   Future<String> userId() async => (await _freshAccess()).userId;
 
-  Future<Object?> request(
+  Future<T> request<T>(
     HttpMethod method,
-    String path, {
+    String path,
+    T Function(Object? json) decode, {
     Map<String, dynamic>? query,
     Object? body,
   }) async {
     final access = await _freshAccess();
     final exchange = await _sendToApi(access, method, path, query, body);
-    return switch (exchange.response.statusCode) {
-      401 => _retryWithNewAccess(access, method, path, query, body),
-      _ => _decodeOrThrow(exchange),
+    final accepted = switch (exchange.response.statusCode) {
+      401 => await _retryWithNewAccess(access, method, path, query, body),
+      _ => exchange,
     };
+    return _decodeJson(accepted, decode);
   }
 
-  Future<Object?> _retryWithNewAccess(
+  Future<_Exchange> _retryWithNewAccess(
     ApiAccess rejected,
     HttpMethod method,
     String path,
@@ -88,7 +92,7 @@ final class MfpTransport {
           _errorMessages(exchange.response),
         );
     }
-    return _decodeOrThrow(exchange);
+    return exchange;
   }
 
   Future<ApiAccess> _freshAccess() async {
@@ -165,8 +169,9 @@ final class MfpTransport {
           if (isJson) ..._errorMessages(response),
         ]);
     }
-    final token = AuthTokenResponseMapper.fromMap(
-      asMap(_decodeOrThrow(exchange)),
+    final token = _decodeJson(
+      exchange,
+      (json) => AuthTokenResponseMapper.fromMap(asMap(json)),
     );
     return ApiAccess(
       cookies: current,
@@ -230,12 +235,30 @@ final class MfpTransport {
     return _send(request);
   }
 
-  Future<_Exchange> _send(http.Request request) async => (
-    request: request,
-    response: await http.Response.fromStream(await _httpClient.send(request)),
-  );
+  Future<_Exchange> _send(http.BaseRequest request) async {
+    try {
+      return (
+        request: request,
+        response: await http.Response.fromStream(
+          await _httpClient.send(request),
+        ),
+      );
+    } on http.ClientException catch (error) {
+      throw MfpNetworkException(
+        method: request.method,
+        uri: request.url,
+        errors: [error.message],
+      );
+    }
+  }
 
-  Object? _decodeOrThrow(_Exchange exchange) {
+  T _decodeJson<T>(_Exchange exchange, T Function(Object? json) decode) =>
+      _decode(exchange, () {
+        final body = exchange.response.body;
+        return decode(body.isEmpty ? null : jsonDecode(body));
+      });
+
+  T _decode<T>(_Exchange exchange, T Function() decode) {
     final (:request, :response) = exchange;
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw MfpApiException(
@@ -245,8 +268,24 @@ final class MfpTransport {
         errors: _errorMessages(response),
       );
     }
-    return response.body.isEmpty ? null : jsonDecode(response.body);
+    try {
+      return decode();
+    } on FormatException catch (error) {
+      throw _unexpected(exchange, error.message);
+    } on MapperException catch (error) {
+      throw _unexpected(exchange, error.message);
+    }
   }
+
+  static MfpUnexpectedResponseException _unexpected(
+    _Exchange exchange,
+    String reason,
+  ) => MfpUnexpectedResponseException(
+    method: exchange.request.method,
+    uri: exchange.request.url,
+    statusCode: exchange.response.statusCode,
+    errors: [reason],
+  );
 
   List<String> _errorMessages(http.Response response) {
     if (!_isJson(response) || response.body.isEmpty) return const [];
@@ -277,4 +316,4 @@ final class MfpTransport {
   };
 }
 
-typedef _Exchange = ({http.Request request, http.Response response});
+typedef _Exchange = ({http.BaseRequest request, http.Response response});

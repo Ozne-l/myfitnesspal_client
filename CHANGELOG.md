@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Every failure is now an `MfpException`. New: `MfpNetworkException` (was a
+  raw `http.ClientException`) and `MfpUnexpectedResponseException` (was a
+  `FormatException` or `MapperException`).
 - Signing in follows the website when `/user/auth_token` bounces through the
   login page, and keeps the cookies it sets on the way, as a browser does.
   Before, this ended in an HTTP client "redirect loop" error.

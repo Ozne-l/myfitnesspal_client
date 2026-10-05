@@ -32,3 +32,31 @@ final class MfpApiException extends MfpException with MfpApiExceptionMappable {
   final Uri uri;
   final int statusCode;
 }
+
+@MappableClass(includeCustomMappers: [UriMapper()])
+final class MfpNetworkException extends MfpException
+    with MfpNetworkExceptionMappable {
+  const MfpNetworkException({
+    required this.method,
+    required this.uri,
+    List<String> errors = const [],
+  }) : super(errors);
+
+  final String method;
+  final Uri uri;
+}
+
+@MappableClass(includeCustomMappers: [UriMapper()])
+final class MfpUnexpectedResponseException extends MfpException
+    with MfpUnexpectedResponseExceptionMappable {
+  const MfpUnexpectedResponseException({
+    required this.method,
+    required this.uri,
+    required this.statusCode,
+    List<String> errors = const [],
+  }) : super(errors);
+
+  final String method;
+  final Uri uri;
+  final int statusCode;
+}

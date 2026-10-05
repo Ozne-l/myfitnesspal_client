@@ -17,6 +17,8 @@ class MfpExceptionMapper extends ClassMapperBase<MfpException> {
       MapperContainer.globals.use(_instance = MfpExceptionMapper._());
       MfpAuthExceptionMapper.ensureInitialized();
       MfpApiExceptionMapper.ensureInitialized();
+      MfpNetworkExceptionMapper.ensureInitialized();
+      MfpUnexpectedResponseExceptionMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -394,5 +396,383 @@ class _MfpApiExceptionCopyWithImpl<$R, $Out>
   MfpApiExceptionCopyWith<$R2, MfpApiException, $Out2> $chain<$R2, $Out2>(
     Then<$Out2, $R2> t,
   ) => _MfpApiExceptionCopyWithImpl<$R2, $Out2>($value, $cast, t);
+}
+
+class MfpNetworkExceptionMapper
+    extends SubClassMapperBase<MfpNetworkException> {
+  MfpNetworkExceptionMapper._();
+
+  static MfpNetworkExceptionMapper? _instance;
+  static MfpNetworkExceptionMapper ensureInitialized() {
+    if (_instance == null) {
+      MapperContainer.globals.use(_instance = MfpNetworkExceptionMapper._());
+      MfpExceptionMapper.ensureInitialized().addSubMapper(_instance!);
+      MapperContainer.globals.useAll([UriMapper()]);
+    }
+    return _instance!;
+  }
+
+  @override
+  final String id = 'MfpNetworkException';
+
+  static String _$method(MfpNetworkException v) => v.method;
+  static const Field<MfpNetworkException, String> _f$method = Field(
+    'method',
+    _$method,
+  );
+  static Uri _$uri(MfpNetworkException v) => v.uri;
+  static const Field<MfpNetworkException, Uri> _f$uri = Field('uri', _$uri);
+  static List<String> _$errors(MfpNetworkException v) => v.errors;
+  static const Field<MfpNetworkException, List<String>> _f$errors = Field(
+    'errors',
+    _$errors,
+    opt: true,
+    def: const [],
+  );
+
+  @override
+  final MappableFields<MfpNetworkException> fields = const {
+    #method: _f$method,
+    #uri: _f$uri,
+    #errors: _f$errors,
+  };
+  @override
+  final bool ignoreNull = true;
+
+  @override
+  final String discriminatorKey = 'kind';
+  @override
+  final dynamic discriminatorValue = 'MfpNetworkException';
+  @override
+  late final ClassMapperBase superMapper =
+      MfpExceptionMapper.ensureInitialized();
+
+  static MfpNetworkException _instantiate(DecodingData data) {
+    return MfpNetworkException(
+      method: data.dec(_f$method),
+      uri: data.dec(_f$uri),
+      errors: data.dec(_f$errors),
+    );
+  }
+
+  @override
+  final Function instantiate = _instantiate;
+
+  static MfpNetworkException fromMap(Map<String, dynamic> map) {
+    return ensureInitialized().decodeMap<MfpNetworkException>(map);
+  }
+
+  static MfpNetworkException fromJson(String json) {
+    return ensureInitialized().decodeJson<MfpNetworkException>(json);
+  }
+}
+
+mixin MfpNetworkExceptionMappable {
+  String toJson() {
+    return MfpNetworkExceptionMapper.ensureInitialized()
+        .encodeJson<MfpNetworkException>(this as MfpNetworkException);
+  }
+
+  Map<String, dynamic> toMap() {
+    return MfpNetworkExceptionMapper.ensureInitialized()
+        .encodeMap<MfpNetworkException>(this as MfpNetworkException);
+  }
+
+  MfpNetworkExceptionCopyWith<
+    MfpNetworkException,
+    MfpNetworkException,
+    MfpNetworkException
+  >
+  get copyWith =>
+      _MfpNetworkExceptionCopyWithImpl<
+        MfpNetworkException,
+        MfpNetworkException
+      >(this as MfpNetworkException, $identity, $identity);
+  @override
+  String toString() {
+    return MfpNetworkExceptionMapper.ensureInitialized().stringifyValue(
+      this as MfpNetworkException,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return MfpNetworkExceptionMapper.ensureInitialized().equalsValue(
+      this as MfpNetworkException,
+      other,
+    );
+  }
+
+  @override
+  int get hashCode {
+    return MfpNetworkExceptionMapper.ensureInitialized().hashValue(
+      this as MfpNetworkException,
+    );
+  }
+}
+
+extension MfpNetworkExceptionValueCopy<$R, $Out>
+    on ObjectCopyWith<$R, MfpNetworkException, $Out> {
+  MfpNetworkExceptionCopyWith<$R, MfpNetworkException, $Out>
+  get $asMfpNetworkException => $base.as(
+    (v, t, t2) => _MfpNetworkExceptionCopyWithImpl<$R, $Out>(v, t, t2),
+  );
+}
+
+abstract class MfpNetworkExceptionCopyWith<
+  $R,
+  $In extends MfpNetworkException,
+  $Out
+>
+    implements MfpExceptionCopyWith<$R, $In, $Out> {
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get errors;
+  @override
+  $R call({String? method, Uri? uri, List<String>? errors});
+  MfpNetworkExceptionCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
+    Then<$Out2, $R2> t,
+  );
+}
+
+class _MfpNetworkExceptionCopyWithImpl<$R, $Out>
+    extends ClassCopyWithBase<$R, MfpNetworkException, $Out>
+    implements MfpNetworkExceptionCopyWith<$R, MfpNetworkException, $Out> {
+  _MfpNetworkExceptionCopyWithImpl(super.value, super.then, super.then2);
+
+  @override
+  late final ClassMapperBase<MfpNetworkException> $mapper =
+      MfpNetworkExceptionMapper.ensureInitialized();
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get errors =>
+      ListCopyWith(
+        $value.errors,
+        (v, t) => ObjectCopyWith(v, $identity, t),
+        (v) => call(errors: v),
+      );
+  @override
+  $R call({String? method, Uri? uri, List<String>? errors}) => $apply(
+    FieldCopyWithData({
+      if (method != null) #method: method,
+      if (uri != null) #uri: uri,
+      if (errors != null) #errors: errors,
+    }),
+  );
+  @override
+  MfpNetworkException $make(CopyWithData data) => MfpNetworkException(
+    method: data.get(#method, or: $value.method),
+    uri: data.get(#uri, or: $value.uri),
+    errors: data.get(#errors, or: $value.errors),
+  );
+
+  @override
+  MfpNetworkExceptionCopyWith<$R2, MfpNetworkException, $Out2>
+  $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>
+      _MfpNetworkExceptionCopyWithImpl<$R2, $Out2>($value, $cast, t);
+}
+
+class MfpUnexpectedResponseExceptionMapper
+    extends SubClassMapperBase<MfpUnexpectedResponseException> {
+  MfpUnexpectedResponseExceptionMapper._();
+
+  static MfpUnexpectedResponseExceptionMapper? _instance;
+  static MfpUnexpectedResponseExceptionMapper ensureInitialized() {
+    if (_instance == null) {
+      MapperContainer.globals.use(
+        _instance = MfpUnexpectedResponseExceptionMapper._(),
+      );
+      MfpExceptionMapper.ensureInitialized().addSubMapper(_instance!);
+      MapperContainer.globals.useAll([UriMapper()]);
+    }
+    return _instance!;
+  }
+
+  @override
+  final String id = 'MfpUnexpectedResponseException';
+
+  static String _$method(MfpUnexpectedResponseException v) => v.method;
+  static const Field<MfpUnexpectedResponseException, String> _f$method = Field(
+    'method',
+    _$method,
+  );
+  static Uri _$uri(MfpUnexpectedResponseException v) => v.uri;
+  static const Field<MfpUnexpectedResponseException, Uri> _f$uri = Field(
+    'uri',
+    _$uri,
+  );
+  static int _$statusCode(MfpUnexpectedResponseException v) => v.statusCode;
+  static const Field<MfpUnexpectedResponseException, int> _f$statusCode = Field(
+    'statusCode',
+    _$statusCode,
+    key: r'status_code',
+  );
+  static List<String> _$errors(MfpUnexpectedResponseException v) => v.errors;
+  static const Field<MfpUnexpectedResponseException, List<String>> _f$errors =
+      Field('errors', _$errors, opt: true, def: const []);
+
+  @override
+  final MappableFields<MfpUnexpectedResponseException> fields = const {
+    #method: _f$method,
+    #uri: _f$uri,
+    #statusCode: _f$statusCode,
+    #errors: _f$errors,
+  };
+  @override
+  final bool ignoreNull = true;
+
+  @override
+  final String discriminatorKey = 'kind';
+  @override
+  final dynamic discriminatorValue = 'MfpUnexpectedResponseException';
+  @override
+  late final ClassMapperBase superMapper =
+      MfpExceptionMapper.ensureInitialized();
+
+  static MfpUnexpectedResponseException _instantiate(DecodingData data) {
+    return MfpUnexpectedResponseException(
+      method: data.dec(_f$method),
+      uri: data.dec(_f$uri),
+      statusCode: data.dec(_f$statusCode),
+      errors: data.dec(_f$errors),
+    );
+  }
+
+  @override
+  final Function instantiate = _instantiate;
+
+  static MfpUnexpectedResponseException fromMap(Map<String, dynamic> map) {
+    return ensureInitialized().decodeMap<MfpUnexpectedResponseException>(map);
+  }
+
+  static MfpUnexpectedResponseException fromJson(String json) {
+    return ensureInitialized().decodeJson<MfpUnexpectedResponseException>(json);
+  }
+}
+
+mixin MfpUnexpectedResponseExceptionMappable {
+  String toJson() {
+    return MfpUnexpectedResponseExceptionMapper.ensureInitialized()
+        .encodeJson<MfpUnexpectedResponseException>(
+          this as MfpUnexpectedResponseException,
+        );
+  }
+
+  Map<String, dynamic> toMap() {
+    return MfpUnexpectedResponseExceptionMapper.ensureInitialized()
+        .encodeMap<MfpUnexpectedResponseException>(
+          this as MfpUnexpectedResponseException,
+        );
+  }
+
+  MfpUnexpectedResponseExceptionCopyWith<
+    MfpUnexpectedResponseException,
+    MfpUnexpectedResponseException,
+    MfpUnexpectedResponseException
+  >
+  get copyWith =>
+      _MfpUnexpectedResponseExceptionCopyWithImpl<
+        MfpUnexpectedResponseException,
+        MfpUnexpectedResponseException
+      >(this as MfpUnexpectedResponseException, $identity, $identity);
+  @override
+  String toString() {
+    return MfpUnexpectedResponseExceptionMapper.ensureInitialized()
+        .stringifyValue(this as MfpUnexpectedResponseException);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return MfpUnexpectedResponseExceptionMapper.ensureInitialized().equalsValue(
+      this as MfpUnexpectedResponseException,
+      other,
+    );
+  }
+
+  @override
+  int get hashCode {
+    return MfpUnexpectedResponseExceptionMapper.ensureInitialized().hashValue(
+      this as MfpUnexpectedResponseException,
+    );
+  }
+}
+
+extension MfpUnexpectedResponseExceptionValueCopy<$R, $Out>
+    on ObjectCopyWith<$R, MfpUnexpectedResponseException, $Out> {
+  MfpUnexpectedResponseExceptionCopyWith<
+    $R,
+    MfpUnexpectedResponseException,
+    $Out
+  >
+  get $asMfpUnexpectedResponseException => $base.as(
+    (v, t, t2) =>
+        _MfpUnexpectedResponseExceptionCopyWithImpl<$R, $Out>(v, t, t2),
+  );
+}
+
+abstract class MfpUnexpectedResponseExceptionCopyWith<
+  $R,
+  $In extends MfpUnexpectedResponseException,
+  $Out
+>
+    implements MfpExceptionCopyWith<$R, $In, $Out> {
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get errors;
+  @override
+  $R call({String? method, Uri? uri, int? statusCode, List<String>? errors});
+  MfpUnexpectedResponseExceptionCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
+    Then<$Out2, $R2> t,
+  );
+}
+
+class _MfpUnexpectedResponseExceptionCopyWithImpl<$R, $Out>
+    extends ClassCopyWithBase<$R, MfpUnexpectedResponseException, $Out>
+    implements
+        MfpUnexpectedResponseExceptionCopyWith<
+          $R,
+          MfpUnexpectedResponseException,
+          $Out
+        > {
+  _MfpUnexpectedResponseExceptionCopyWithImpl(
+    super.value,
+    super.then,
+    super.then2,
+  );
+
+  @override
+  late final ClassMapperBase<MfpUnexpectedResponseException> $mapper =
+      MfpUnexpectedResponseExceptionMapper.ensureInitialized();
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get errors =>
+      ListCopyWith(
+        $value.errors,
+        (v, t) => ObjectCopyWith(v, $identity, t),
+        (v) => call(errors: v),
+      );
+  @override
+  $R call({String? method, Uri? uri, int? statusCode, List<String>? errors}) =>
+      $apply(
+        FieldCopyWithData({
+          if (method != null) #method: method,
+          if (uri != null) #uri: uri,
+          if (statusCode != null) #statusCode: statusCode,
+          if (errors != null) #errors: errors,
+        }),
+      );
+  @override
+  MfpUnexpectedResponseException $make(CopyWithData data) =>
+      MfpUnexpectedResponseException(
+        method: data.get(#method, or: $value.method),
+        uri: data.get(#uri, or: $value.uri),
+        statusCode: data.get(#statusCode, or: $value.statusCode),
+        errors: data.get(#errors, or: $value.errors),
+      );
+
+  @override
+  MfpUnexpectedResponseExceptionCopyWith<
+    $R2,
+    MfpUnexpectedResponseException,
+    $Out2
+  >
+  $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>
+      _MfpUnexpectedResponseExceptionCopyWithImpl<$R2, $Out2>($value, $cast, t);
 }
 

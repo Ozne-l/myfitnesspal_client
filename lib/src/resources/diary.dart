@@ -26,20 +26,17 @@ final class MfpDiary {
   final MfpTransport _transport;
 
   Future<MfpDiaryDay> forDate(DateTime date) async {
-    final response = DiaryResponseMapper.fromMap(
-      asMap(
-        await _transport.request(
-          HttpMethod.get,
-          _diary,
-          query: DiaryQuery(
-            entryDate: formatMfpDate(date),
-            types: [
-              DiaryItemType.foodEntry,
-              DiaryItemType.diaryMeal,
-            ].map((type) => type.toValue()).join(_typeSeparator),
-          ).toMap(),
-        ),
-      ),
+    final response = await _transport.request(
+      HttpMethod.get,
+      _diary,
+      mapped(DiaryResponseMapper.fromMap),
+      query: DiaryQuery(
+        entryDate: formatMfpDate(date),
+        types: [
+          DiaryItemType.foodEntry,
+          DiaryItemType.diaryMeal,
+        ].map((type) => type.toValue()).join(_typeSeparator),
+      ).toMap(),
     );
     final entries = <MfpFoodEntry>[];
     final mealTotals = <MfpMealTotals>[];
@@ -62,15 +59,13 @@ final class MfpDiary {
 
   Future<List<String>> mealNames() async {
     final userId = await _transport.userId();
-    return UserResponseMapper.fromMap(
-      asMap(
-        await _transport.request(
-          HttpMethod.get,
-          '$_users/$userId',
-          query: const UserQuery().toMap(),
-        ),
-      ),
-    ).item.diaryPreferences.mealNames;
+    final response = await _transport.request(
+      HttpMethod.get,
+      '$_users/$userId',
+      mapped(UserResponseMapper.fromMap),
+      query: const UserQuery().toMap(),
+    );
+    return response.item.diaryPreferences.mealNames;
   }
 
   Future<String?> addFood({
@@ -80,32 +75,29 @@ final class MfpDiary {
     required MfpServingSize servingSize,
     double servings = 1,
   }) async {
-    final response = CreatedItemsResponseMapper.fromMap(
-      asMap(
-        await _transport.request(
-          HttpMethod.post,
-          _diary,
-          body: AddDiaryItemsRequest(
-            items: [
-              FoodEntryRequest(
-                date: formatMfpDate(date),
-                mealName: mealName,
-                servings: servings,
-                food: FoodVersionRequest(id: food.id, version: food.version),
-                servingSize: ServingSizeRequest(
-                  value: servingSize.value,
-                  unit: servingSize.unit,
-                  nutritionMultiplier: servingSize.nutritionMultiplier,
-                ),
-              ),
-            ],
-          ).toMap(),
-        ),
-      ),
+    final response = await _transport.request(
+      HttpMethod.post,
+      _diary,
+      mapped(CreatedItemsResponseMapper.fromMap),
+      body: AddDiaryItemsRequest(
+        items: [
+          FoodEntryRequest(
+            date: formatMfpDate(date),
+            mealName: mealName,
+            servings: servings,
+            food: FoodVersionRequest(id: food.id, version: food.version),
+            servingSize: ServingSizeRequest(
+              value: servingSize.value,
+              unit: servingSize.unit,
+              nutritionMultiplier: servingSize.nutritionMultiplier,
+            ),
+          ),
+        ],
+      ).toMap(),
     );
     return response.items.firstOrNull?.id;
   }
 
   Future<void> remove(String entryId) =>
-      _transport.request(HttpMethod.delete, '$_diary/$entryId');
+      _transport.request(HttpMethod.delete, '$_diary/$entryId', ignoreBody);
 }

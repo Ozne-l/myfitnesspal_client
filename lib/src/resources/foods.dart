@@ -24,19 +24,16 @@ final class MfpFoods {
     bool verifiedOnly = false,
     String? countryCode,
   }) async {
-    final response = FoodSearchResponseMapper.fromMap(
-      asMap(
-        await _transport.request(
-          HttpMethod.get,
-          _search,
-          query: FoodSearchQuery(
-            q: query,
-            scope: verifiedOnly ? SearchScope.verified : SearchScope.all,
-            maxItems: maxResults,
-            countryCode: countryCode?.toUpperCase(),
-          ).toMap(),
-        ),
-      ),
+    final response = await _transport.request(
+      HttpMethod.get,
+      _search,
+      mapped(FoodSearchResponseMapper.fromMap),
+      query: FoodSearchQuery(
+        q: query,
+        scope: verifiedOnly ? SearchScope.verified : SearchScope.all,
+        maxItems: maxResults,
+        countryCode: countryCode?.toUpperCase(),
+      ).toMap(),
     );
     return [
       for (final hit in response.items)
@@ -47,13 +44,13 @@ final class MfpFoods {
     ];
   }
 
-  Future<MfpFood?> byId(String id) async => FoodsResponseMapper.fromMap(
-    asMap(
-      await _transport.request(
-        HttpMethod.get,
-        _foods,
-        query: FoodsQuery(ids: id).toMap(),
-      ),
-    ),
-  ).items.firstOrNull;
+  Future<MfpFood?> byId(String id) async {
+    final response = await _transport.request(
+      HttpMethod.get,
+      _foods,
+      mapped(FoodsResponseMapper.fromMap),
+      query: FoodsQuery(ids: id).toMap(),
+    );
+    return response.items.firstOrNull;
+  }
 }

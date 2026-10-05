@@ -12,3 +12,10 @@ String formatMfpDate(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
+
+T Function(Object? json) mapped<T>(
+  T Function(Map<String, dynamic> map) fromMap,
+) =>
+    (json) => fromMap(asMap(json));
+
+void ignoreBody(Object? json) {}
