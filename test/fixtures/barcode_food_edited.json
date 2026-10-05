@@ -1,0 +1,87 @@
+{
+  "items": [
+    {
+      "id": "200000000000001",
+      "version": "200000000000002",
+      "description": "Flocons d'avoine",
+      "public": true,
+      "brand_name": "Marque Exemple",
+      "user_id": "100000000000099",
+      "deleted": false,
+      "serving_sizes": [
+        {
+          "id": "268838955304573",
+          "value": 100.0,
+          "unit": "g",
+          "nutrition_multiplier": 1.0,
+          "gram_weight": 1.0,
+          "fraction": false,
+          "index": 0
+        },
+        {
+          "id": "268289199490813",
+          "value": 1.0,
+          "unit": "g",
+          "nutrition_multiplier": 0.01,
+          "gram_weight": 0.01,
+          "fraction": false,
+          "index": 1
+        },
+        {
+          "id": "268838955304701",
+          "value": 1.0,
+          "unit": "container (550 gs ea.)",
+          "nutrition_multiplier": 5.5,
+          "gram_weight": 5.5,
+          "fraction": false,
+          "index": 2
+        },
+        {
+          "id": "268289207879293",
+          "value": 1.0,
+          "unit": "ounce",
+          "nutrition_multiplier": 0.283495,
+          "gram_weight": 0.283495,
+          "fraction": false,
+          "index": 3
+        },
+        {
+          "id": "268838963693181",
+          "value": 1.0,
+          "unit": "ounce",
+          "nutrition_multiplier": 0.283495,
+          "gram_weight": 0.283495,
+          "fraction": false,
+          "index": 4
+        }
+      ],
+      "nutritional_contents": {
+        "energy": {
+          "unit": "calories",
+          "value": 375.0
+        },
+        "fat": 8.0,
+        "saturated_fat": 1.5,
+        "trans_fat": 0.0,
+        "cholesterol": 0.0,
+        "sodium": 0.0,
+        "potassium": 0.0,
+        "carbohydrates": 69.0,
+        "net_carbs": 60.0,
+        "fiber": 9.0,
+        "sugar": 1.1,
+        "protein": 11.0,
+        "vitamin_a": 0.0,
+        "vitamin_c": 0.0,
+        "calcium": 0.0,
+        "iron": 27.0,
+        "grams": 1.0
+      },
+      "verified": false,
+      "type": "food",
+      "country_code": "FR",
+      "created_at": "2020-12-19T16:50:03Z",
+      "updated_at": "2020-12-19T16:50:03Z"
+    }
+  ]
+}

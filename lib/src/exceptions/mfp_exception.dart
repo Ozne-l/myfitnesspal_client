@@ -1,5 +1,6 @@
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:myfitnesspal_client/src/exceptions/auth_failure.dart';
+import 'package:myfitnesspal_client/src/exceptions/barcode_failure.dart';
 import 'package:myfitnesspal_client/src/exceptions/uri_mapper.dart';
 
 part 'mfp_exception.mapper.dart';
@@ -59,4 +60,17 @@ final class MfpUnexpectedResponseException extends MfpException
   final String method;
   final Uri uri;
   final int statusCode;
+}
+
+@MappableClass()
+final class MfpBarcodeException extends MfpException
+    with MfpBarcodeExceptionMappable {
+  const MfpBarcodeException(
+    this.barcode,
+    this.failure, [
+    super.errors = const [],
+  ]);
+
+  final String barcode;
+  final MfpBarcodeFailure failure;
 }

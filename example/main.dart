@@ -12,6 +12,7 @@ Netscape cookies.txt format, then:
   dart run example/main.dart diary [YYYY-MM-DD]
   dart run example/main.dart search <words>
   dart run example/main.dart meals
+  dart run example/main.dart barcode <EAN>
 
 Set MFP_USER_AGENT to your browser's user agent if the sign-in is blocked.''';
 
@@ -42,6 +43,8 @@ Future<void> main(List<String> args) async {
         await _search(mfp, words.join(' '));
       case ['meals']:
         stdout.writeln((await mfp.diary.mealNames()).join('\n'));
+      case ['barcode', final barcode]:
+        await _barcode(mfp, barcode);
       default:
         stdout.writeln(_usage);
         exitCode = 64;
@@ -94,6 +97,28 @@ Future<void> _search(MyFitnessPalClient mfp, String query) async {
         '· id ${food.id}',
       ].join(' '),
     );
+  }
+}
+
+Future<void> _barcode(MyFitnessPalClient mfp, String barcode) async {
+  switch (await mfp.foods.byBarcode(barcode)) {
+    case MfpBarcodeFound(:final food):
+      stdout.writeln(
+        [
+          food.description,
+          if (food.brandName case final brand?) '($brand)',
+          '- ${_kcal(food.nutrients)}',
+          '· servings: ${food.servingSizes.map(_serving).join(', ')}',
+          '· id ${food.id}',
+        ].join(' '),
+      );
+    case MfpBarcodeUnresolved(:final description, :final brandName):
+      stdout.writeln(
+        'Known as "$description"${brandName == null ? '' : ' ($brandName)'}, '
+        'but not in the food database: search it by name.',
+      );
+    case MfpBarcodeUnknown():
+      stdout.writeln('No food for $barcode.');
   }
 }
 

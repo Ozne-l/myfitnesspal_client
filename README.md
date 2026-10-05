@@ -19,11 +19,12 @@ contains no API keys: `mfp-main-js` is the public client id of the website.
 |---|---|
 | Session | `signIn` with browser cookies, automatic API tokens, `clearLocalSession` (local only) |
 | Diary | `forDate`, `mealNames`, `addFood`, `remove` |
-| Foods | `search`, `byId` |
+| Foods | `search`, `byId`, `byBarcode` |
 
 `forDate`, `addFood`, `remove` and `byId` make the same requests as existing
-open-source MyFitnessPal clients that work today. `search` and `mealNames`
-have not been checked against live responses yet.
+open-source MyFitnessPal clients that work today. `byBarcode` was checked
+against live responses in October 2026. `search` and `mealNames` have not
+been checked against live responses yet.
 
 ## Install
 
@@ -59,6 +60,15 @@ await mfp.diary.addFood(
   servingSize: rice.servingSizes.first,
   servings: 1.5,
 );
+
+switch (await mfp.foods.byBarcode('3017620422003')) {
+  case MfpBarcodeFound(:final food):
+    print('${food.description}: ${food.servingSizes.first.unit}');
+  case MfpBarcodeUnresolved(:final description, :final brandName):
+    print('Search "$description $brandName" by name instead');
+  case MfpBarcodeUnknown():
+    print('No food for this barcode');
+}
 ```
 
 ### Signing in
@@ -108,13 +118,22 @@ cookies; the session stays valid until you sign out in the browser.
 - **Logging is not idempotent.** `addFood` returns the new entry's id; keep it
   if you may need to `remove` the entry. Entries read with `forDate` carry
   their `id` too (it is nullable only because the API does not promise it).
-- **No barcodes.** The v2 API never returns an EAN/UPC, not on diary entries,
-  not on foods, not with `fields[]=all` (checked against live responses in
-  2026). Matching MyFitnessPal foods to another database therefore has to go
-  through names and nutrients, or through a mapping the user confirms once.
-  The mobile app does know barcodes, but gets them through its binary sync
-  protocol, which needs the app's client credentials, which is out of scope here. If
-  name matching proves too painful, that protocol is the place to look.
+- **Barcodes go through another door.** The v2 API never returns an
+  EAN/UPC, not on diary entries, not on foods, not with `fields[]=all`, and
+  its search does not match barcodes. `byBarcode` asks the binary sync
+  endpoint of the Android app (`sync.myfitnesspal.com/iphone_api/synchronize`)
+  instead, which answers barcode lookups without any credentials, then reads
+  the food from `/v2/foods` with your session. That endpoint is undocumented
+  and older than the rest: it can change or close without notice, so keep
+  text search as the fallback.
+- **Barcode results need a human.** Barcode foods are contributed by users
+  and rarely `verified`. In-store codes (prefixes `02` and `20` to `29`) are
+  reused by different shops, so the same code can be a different product
+  elsewhere. Let the user confirm the food and serving before logging it.
+- **A scanned food may be an edited one.** The sync endpoint gives the food's
+  original id and its current version; `byBarcode` fetches by the original
+  id. When `/v2/foods` does not return it, you get `MfpBarcodeUnresolved`
+  with the name and brand to search for.
 - **Diary days are calendar days.** `MfpDiaryDay.date` and
   `MfpFoodEntry.date` are midnight UTC of the day, whatever the time zone.
 - `forDate` ignores exercise and other diary items; `search` ignores results
@@ -133,13 +152,19 @@ one message per case. Its `errors` carry the details for your logs.
 | `MfpAuthException(sessionExpired)` | MyFitnessPal ended the session; the stored cookies are cleared | sign in again |
 | `MfpApiException` | an error status (`statusCode`), with the server's messages | MyFitnessPal refused the request |
 | `MfpNetworkException` | no connection, DNS failure, connection lost; the session is kept | check the connection and retry |
-| `MfpUnexpectedResponseException` | a response this client cannot read: not JSON, a missing field | MyFitnessPal changed something; update the app |
+| `MfpUnexpectedResponseException` | a response this client cannot read: not JSON, a missing field, a broken sync packet | MyFitnessPal changed something; update the app |
+| `MfpBarcodeException(invalidBarcode)` | not 8, 12, 13 or 14 digits, or a wrong check digit; nothing was sent | the code was misread, scan again |
+| `MfpBarcodeException(rejected)` | the sync endpoint answered with a failure status | barcode lookup is unavailable, search by name |
 
 `MfpAuthException(sessionExpired)` lists each request made while asking for
 a token: status, path, redirect target and the names of the cookies the
 website set. A `403` on `/user/auth_token` (an `MfpApiException`) usually
 means the website's bot protection blocked the request: retry with your
 browser's user agent as `userAgent`.
+
+`byBarcode` reports the three normal outcomes as an `MfpBarcodeResult`, not as
+errors: `MfpBarcodeFound`, `MfpBarcodeUnknown` (no food for this barcode) and
+`MfpBarcodeUnresolved` (see above).
 
 ## Try it
 
@@ -148,6 +173,7 @@ export MFP_COOKIES=path/to/cookies.txt
 dart run example/main.dart diary 2026-10-01
 dart run example/main.dart search flocons d avoine
 dart run example/main.dart meals
+dart run example/main.dart barcode 3017620422003
 ```
 
 The example only reads. Set `MFP_USER_AGENT` to your browser's user agent if
@@ -161,8 +187,9 @@ dart run build_runner build   # after changing a model
 dart analyze && dart test
 ```
 
-Tests run against made-up responses; they never call MyFitnessPal. Never
-commit cookies, real captures, or account data.
+Tests run against made-up responses, or real ones whose ids and names were
+replaced; they never call MyFitnessPal. Never commit cookies, account data,
+or a capture you have not anonymised.
 
 ## License
 

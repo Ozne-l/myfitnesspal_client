@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -26,6 +27,34 @@ http.Response jsonFixture(String name) => http.Response(
   200,
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
+
+http.Response binaryFixture(String name) => binary(
+  File('test/fixtures/$name').readAsBytesSync(),
+);
+
+http.Response binary(List<int> bytes) => http.Response.bytes(
+  bytes,
+  200,
+  headers: {'content-type': 'application/octet-stream'},
+);
+
+Uint8List syncDataOf(http.Request request) {
+  final body = request.bodyBytes;
+  final start = _indexOf(body, ascii.encode('\r\n\r\n')) + 4;
+  final end = _indexOf(body, ascii.encode('\r\n--'), from: start);
+  return Uint8List.sublistView(body, start, end);
+}
+
+int _indexOf(List<int> bytes, List<int> needle, {int from = 0}) {
+  for (var i = from; i <= bytes.length - needle.length; i++) {
+    var matches = true;
+    for (var j = 0; j < needle.length && matches; j++) {
+      matches = bytes[i + j] == needle[j];
+    }
+    if (matches) return i;
+  }
+  throw StateError('multipart boundary not found');
+}
 
 http.Response token({String accessToken = 'access-1', int expiresIn = 3600}) =>
     json({

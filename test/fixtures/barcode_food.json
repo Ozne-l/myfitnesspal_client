@@ -1,0 +1,71 @@
+{
+  "items": [
+    {
+      "id": "100000000000001",
+      "version": "100000000000001",
+      "description": "Complement mineral",
+      "public": true,
+      "brand_name": "Marque Exemple",
+      "user_id": "100000000000099",
+      "deleted": false,
+      "serving_sizes": [
+        {
+          "id": "57483580933861",
+          "value": 2.0,
+          "unit": "capsule",
+          "nutrition_multiplier": 1.0,
+          "gram_weight": 1.0,
+          "fraction": false,
+          "index": 0
+        },
+        {
+          "id": "58033336747749",
+          "value": 1.0,
+          "unit": "capsule",
+          "nutrition_multiplier": 0.5,
+          "gram_weight": 0.5,
+          "fraction": true,
+          "index": 1
+        },
+        {
+          "id": "57483589322341",
+          "value": 1.0,
+          "unit": "container (800,00 capsule)",
+          "nutrition_multiplier": 400.0,
+          "gram_weight": 400.0,
+          "fraction": true,
+          "index": 2
+        }
+      ],
+      "nutritional_contents": {
+        "energy": {
+          "unit": "calories",
+          "value": 8.0
+        },
+        "fat": 0.0,
+        "saturated_fat": 0.0,
+        "polyunsaturated_fat": 0.0,
+        "monounsaturated_fat": 0.0,
+        "trans_fat": 0.0,
+        "cholesterol": 0.0,
+        "sodium": 0.0,
+        "potassium": 1058.0,
+        "carbohydrates": 0.0,
+        "net_carbs": 0.0,
+        "fiber": 0.0,
+        "sugar": 0.0,
+        "protein": 0.0,
+        "vitamin_a": 0.0,
+        "vitamin_c": 0.0,
+        "calcium": 0.0,
+        "iron": 0.0,
+        "grams": 1.0
+      },
+      "verified": false,
+      "type": "food",
+      "country_code": "FR",
+      "created_at": "2022-01-17T10:43:57Z",
+      "updated_at": "2022-01-17T10:43:57Z"
+    }
+  ]
+}

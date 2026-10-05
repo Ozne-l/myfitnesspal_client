@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dart_mappable/dart_mappable.dart';
 
@@ -14,6 +15,7 @@ import 'package:myfitnesspal_client/src/http_method.dart';
 import 'package:myfitnesspal_client/src/requests/auth_token_query.dart';
 import 'package:myfitnesspal_client/src/requests/auth_token_response.dart';
 import 'package:myfitnesspal_client/src/requests/error_response.dart';
+import 'package:myfitnesspal_client/src/sync/sync_packets.dart';
 
 final class MfpTransport {
   MfpTransport({
@@ -21,6 +23,7 @@ final class MfpTransport {
     required this._sessionStore,
     required this._webUri,
     required this._apiUri,
+    required this._syncUri,
     required this._userAgent,
     required this._clock,
   });
@@ -32,15 +35,22 @@ final class MfpTransport {
   static const _maxAuthHops = 5;
   static const _locationHeader = 'location';
   static const _setCookieHeader = 'set-cookie';
+  static const _syncPath = '/iphone_api/synchronize';
+  static const _syncLanguage = 'fr-FR';
+  static const _syncField = 'syncdata';
+  static const _syncFileName = 'syncdata.dat';
 
   final http.Client _httpClient;
   final MfpSessionStore _sessionStore;
   final Uri _webUri;
   final Uri _apiUri;
+  final Uri _syncUri;
   final String _userAgent;
   final DateTime Function() _clock;
+  final Uint8List _syncDeviceId = newSyncDeviceId();
   ApiAccess? _access;
   Future<ApiAccess>? _fetching;
+  var _syncSequence = 0;
 
   Future<void> signIn(MfpSessionCookies cookies) async {
     if (!cookies.hasSession) {
@@ -72,6 +82,44 @@ final class MfpTransport {
       _ => exchange,
     };
     return _decodeJson(accepted, decode);
+  }
+
+  Future<T> sync<T>(
+    List<int> packets,
+    T Function(SyncReply reply) decode,
+  ) async {
+    final sequence = ++_syncSequence;
+    final deviceId = formatSyncDeviceId(_syncDeviceId);
+    final request =
+        http.MultipartRequest(
+            HttpMethod.post.verb,
+            _syncUri.replace(
+              path: _syncPath,
+              queryParameters: {'lang': _syncLanguage},
+            ),
+          )
+          ..headers.addAll({
+            'device_id': deviceId,
+            'mfp-device-id': deviceId,
+            'mfp-client-id': _webClientId,
+            'user-agent': _userAgent,
+          })
+          ..files.add(
+            http.MultipartFile.fromBytes(_syncField, [
+              ...syncRequestHeader(
+                sequence: sequence,
+                deviceId: _syncDeviceId,
+              ),
+              ...packets,
+            ], filename: _syncFileName),
+          );
+    final exchange = await _send(request);
+    return _decode(
+      exchange,
+      () => decode(
+        parseSyncReply(exchange.response.bodyBytes, sequence: sequence),
+      ),
+    );
   }
 
   Future<_Exchange> _retryWithNewAccess(

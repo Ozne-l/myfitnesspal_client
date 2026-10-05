@@ -12,6 +12,7 @@ final class MyFitnessPalClient {
     http.Client? httpClient,
     Uri? webUri,
     Uri? apiUri,
+    Uri? syncUri,
     String userAgent = defaultUserAgent,
     DateTime Function()? clock,
   }) {
@@ -23,6 +24,7 @@ final class MyFitnessPalClient {
         sessionStore: store,
         webUri: webUri ?? defaultWebUri,
         apiUri: apiUri ?? defaultApiUri,
+        syncUri: syncUri ?? defaultSyncUri,
         userAgent: userAgent,
         clock: clock ?? DateTime.now,
       ),
@@ -42,6 +44,7 @@ final class MyFitnessPalClient {
 
   static final Uri defaultWebUri = Uri.parse('https://www.myfitnesspal.com');
   static final Uri defaultApiUri = Uri.parse('https://api.myfitnesspal.com');
+  static final Uri defaultSyncUri = Uri.parse('https://sync.myfitnesspal.com');
   static const defaultUserAgent =
       'myfitnesspal_client/0.1.0 (unofficial; Dart)';
 

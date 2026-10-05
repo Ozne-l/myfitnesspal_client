@@ -19,6 +19,7 @@ class MfpExceptionMapper extends ClassMapperBase<MfpException> {
       MfpApiExceptionMapper.ensureInitialized();
       MfpNetworkExceptionMapper.ensureInitialized();
       MfpUnexpectedResponseExceptionMapper.ensureInitialized();
+      MfpBarcodeExceptionMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -774,5 +775,184 @@ class _MfpUnexpectedResponseExceptionCopyWithImpl<$R, $Out>
   >
   $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>
       _MfpUnexpectedResponseExceptionCopyWithImpl<$R2, $Out2>($value, $cast, t);
+}
+
+class MfpBarcodeExceptionMapper
+    extends SubClassMapperBase<MfpBarcodeException> {
+  MfpBarcodeExceptionMapper._();
+
+  static MfpBarcodeExceptionMapper? _instance;
+  static MfpBarcodeExceptionMapper ensureInitialized() {
+    if (_instance == null) {
+      MapperContainer.globals.use(_instance = MfpBarcodeExceptionMapper._());
+      MfpExceptionMapper.ensureInitialized().addSubMapper(_instance!);
+      MfpBarcodeFailureMapper.ensureInitialized();
+    }
+    return _instance!;
+  }
+
+  @override
+  final String id = 'MfpBarcodeException';
+
+  static String _$barcode(MfpBarcodeException v) => v.barcode;
+  static const Field<MfpBarcodeException, String> _f$barcode = Field(
+    'barcode',
+    _$barcode,
+  );
+  static MfpBarcodeFailure _$failure(MfpBarcodeException v) => v.failure;
+  static const Field<MfpBarcodeException, MfpBarcodeFailure> _f$failure = Field(
+    'failure',
+    _$failure,
+  );
+  static List<String> _$errors(MfpBarcodeException v) => v.errors;
+  static const Field<MfpBarcodeException, List<String>> _f$errors = Field(
+    'errors',
+    _$errors,
+    opt: true,
+    def: const [],
+  );
+
+  @override
+  final MappableFields<MfpBarcodeException> fields = const {
+    #barcode: _f$barcode,
+    #failure: _f$failure,
+    #errors: _f$errors,
+  };
+  @override
+  final bool ignoreNull = true;
+
+  @override
+  final String discriminatorKey = 'kind';
+  @override
+  final dynamic discriminatorValue = 'MfpBarcodeException';
+  @override
+  late final ClassMapperBase superMapper =
+      MfpExceptionMapper.ensureInitialized();
+
+  static MfpBarcodeException _instantiate(DecodingData data) {
+    return MfpBarcodeException(
+      data.dec(_f$barcode),
+      data.dec(_f$failure),
+      data.dec(_f$errors),
+    );
+  }
+
+  @override
+  final Function instantiate = _instantiate;
+
+  static MfpBarcodeException fromMap(Map<String, dynamic> map) {
+    return ensureInitialized().decodeMap<MfpBarcodeException>(map);
+  }
+
+  static MfpBarcodeException fromJson(String json) {
+    return ensureInitialized().decodeJson<MfpBarcodeException>(json);
+  }
+}
+
+mixin MfpBarcodeExceptionMappable {
+  String toJson() {
+    return MfpBarcodeExceptionMapper.ensureInitialized()
+        .encodeJson<MfpBarcodeException>(this as MfpBarcodeException);
+  }
+
+  Map<String, dynamic> toMap() {
+    return MfpBarcodeExceptionMapper.ensureInitialized()
+        .encodeMap<MfpBarcodeException>(this as MfpBarcodeException);
+  }
+
+  MfpBarcodeExceptionCopyWith<
+    MfpBarcodeException,
+    MfpBarcodeException,
+    MfpBarcodeException
+  >
+  get copyWith =>
+      _MfpBarcodeExceptionCopyWithImpl<
+        MfpBarcodeException,
+        MfpBarcodeException
+      >(this as MfpBarcodeException, $identity, $identity);
+  @override
+  String toString() {
+    return MfpBarcodeExceptionMapper.ensureInitialized().stringifyValue(
+      this as MfpBarcodeException,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return MfpBarcodeExceptionMapper.ensureInitialized().equalsValue(
+      this as MfpBarcodeException,
+      other,
+    );
+  }
+
+  @override
+  int get hashCode {
+    return MfpBarcodeExceptionMapper.ensureInitialized().hashValue(
+      this as MfpBarcodeException,
+    );
+  }
+}
+
+extension MfpBarcodeExceptionValueCopy<$R, $Out>
+    on ObjectCopyWith<$R, MfpBarcodeException, $Out> {
+  MfpBarcodeExceptionCopyWith<$R, MfpBarcodeException, $Out>
+  get $asMfpBarcodeException => $base.as(
+    (v, t, t2) => _MfpBarcodeExceptionCopyWithImpl<$R, $Out>(v, t, t2),
+  );
+}
+
+abstract class MfpBarcodeExceptionCopyWith<
+  $R,
+  $In extends MfpBarcodeException,
+  $Out
+>
+    implements MfpExceptionCopyWith<$R, $In, $Out> {
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get errors;
+  @override
+  $R call({String? barcode, MfpBarcodeFailure? failure, List<String>? errors});
+  MfpBarcodeExceptionCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
+    Then<$Out2, $R2> t,
+  );
+}
+
+class _MfpBarcodeExceptionCopyWithImpl<$R, $Out>
+    extends ClassCopyWithBase<$R, MfpBarcodeException, $Out>
+    implements MfpBarcodeExceptionCopyWith<$R, MfpBarcodeException, $Out> {
+  _MfpBarcodeExceptionCopyWithImpl(super.value, super.then, super.then2);
+
+  @override
+  late final ClassMapperBase<MfpBarcodeException> $mapper =
+      MfpBarcodeExceptionMapper.ensureInitialized();
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get errors =>
+      ListCopyWith(
+        $value.errors,
+        (v, t) => ObjectCopyWith(v, $identity, t),
+        (v) => call(errors: v),
+      );
+  @override
+  $R call({
+    String? barcode,
+    MfpBarcodeFailure? failure,
+    List<String>? errors,
+  }) => $apply(
+    FieldCopyWithData({
+      if (barcode != null) #barcode: barcode,
+      if (failure != null) #failure: failure,
+      if (errors != null) #errors: errors,
+    }),
+  );
+  @override
+  MfpBarcodeException $make(CopyWithData data) => MfpBarcodeException(
+    data.get(#barcode, or: $value.barcode),
+    data.get(#failure, or: $value.failure),
+    data.get(#errors, or: $value.errors),
+  );
+
+  @override
+  MfpBarcodeExceptionCopyWith<$R2, MfpBarcodeException, $Out2>
+  $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>
+      _MfpBarcodeExceptionCopyWithImpl<$R2, $Out2>($value, $cast, t);
 }
 
