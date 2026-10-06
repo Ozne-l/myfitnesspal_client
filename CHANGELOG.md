@@ -1,5 +1,8 @@
 ## Unreleased
 
+- `checkBarcode` validates a barcode on the device and returns an
+  `MfpBarcodeCheck` (valid with its `MfpBarcodeFormat`, not digits, wrong
+  length, wrong check digit with the expected digit). `byBarcode` uses it.
 - `foods.byBarcode` looks an EAN/UPC up through the Android app's sync
   endpoint, without credentials, then reads the food from `/v2/foods`. It
   returns `MfpBarcodeFound`, `MfpBarcodeUnknown` or `MfpBarcodeUnresolved`.

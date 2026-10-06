@@ -4,6 +4,8 @@ export 'src/auth/session_store.dart';
 export 'src/exceptions/auth_failure.dart';
 export 'src/exceptions/barcode_failure.dart';
 export 'src/exceptions/mfp_exception.dart';
+export 'src/models/barcode_check.dart';
+export 'src/models/barcode_format.dart';
 export 'src/models/barcode_result.dart';
 export 'src/models/diary_day.dart';
 export 'src/models/diary_item.dart';

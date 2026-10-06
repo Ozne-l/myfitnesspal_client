@@ -126,6 +126,30 @@ void main() {
     check(fake.requests).isEmpty();
   });
 
+  test('checkBarcode tells what is wrong while the code is typed', () {
+    check(checkBarcode('3275760750398'))
+        .isA<MfpValidBarcode>()
+        .has(
+          (c) => c.format,
+          'format',
+        )
+        .equals(MfpBarcodeFormat.ean13);
+    check(checkBarcode('036000291452'))
+        .isA<MfpValidBarcode>()
+        .has(
+          (c) => c.format,
+          'format',
+        )
+        .equals(MfpBarcodeFormat.upcA);
+    check(checkBarcode('3275760750399')).isA<MfpBarcodeWrongCheckDigit>()
+      ..has((c) => c.format, 'format').equals(MfpBarcodeFormat.ean13)
+      ..has((c) => c.actual, 'actual').equals(9)
+      ..has((c) => c.expected, 'expected').equals(8);
+    check(checkBarcode('327576075')).isA<MfpBarcodeWrongLength>();
+    check(checkBarcode('')).isA<MfpBarcodeNotDigits>();
+    check(checkBarcode('32757607503 8')).isA<MfpBarcodeNotDigits>();
+  });
+
   test(
     'UPC-A and EAN-8 codes with a valid check digit are looked up',
     () async {

@@ -153,7 +153,7 @@ one message per case. Its `errors` carry the details for your logs.
 | `MfpApiException` | an error status (`statusCode`), with the server's messages | MyFitnessPal refused the request |
 | `MfpNetworkException` | no connection, DNS failure, connection lost; the session is kept | check the connection and retry |
 | `MfpUnexpectedResponseException` | a response this client cannot read: not JSON, a missing field, a broken sync packet | MyFitnessPal changed something; update the app |
-| `MfpBarcodeException(invalidBarcode)` | not 8, 12, 13 or 14 digits, or a wrong check digit; nothing was sent | the code was misread, scan again |
+| `MfpBarcodeException(invalidBarcode)` | `checkBarcode` refused the code; nothing was sent | the code was misread, scan again |
 | `MfpBarcodeException(rejected)` | the sync endpoint answered with a failure status | barcode lookup is unavailable, search by name |
 
 `MfpAuthException(sessionExpired)` lists each request made while asking for
@@ -161,6 +161,12 @@ a token: status, path, redirect target and the names of the cookies the
 website set. A `403` on `/user/auth_token` (an `MfpApiException`) usually
 means the website's bot protection blocked the request: retry with your
 browser's user agent as `userAgent`.
+
+`checkBarcode` runs the same check on the device, without a request, so a
+form can react while the code is typed. It returns an `MfpBarcodeCheck`:
+`MfpValidBarcode` with its `MfpBarcodeFormat` (EAN-8, UPC-A, EAN-13,
+GTIN-14), `MfpBarcodeNotDigits`, `MfpBarcodeWrongLength`, or
+`MfpBarcodeWrongCheckDigit` with the `actual` and `expected` digits.
 
 `byBarcode` reports the three normal outcomes as an `MfpBarcodeResult`, not as
 errors: `MfpBarcodeFound`, `MfpBarcodeUnknown` (no food for this barcode) and

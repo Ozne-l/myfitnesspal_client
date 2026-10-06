@@ -2,6 +2,7 @@ import 'package:myfitnesspal_client/src/decoding.dart';
 import 'package:myfitnesspal_client/src/exceptions/barcode_failure.dart';
 import 'package:myfitnesspal_client/src/exceptions/mfp_exception.dart';
 import 'package:myfitnesspal_client/src/http_method.dart';
+import 'package:myfitnesspal_client/src/models/barcode_check.dart';
 import 'package:myfitnesspal_client/src/models/barcode_result.dart';
 import 'package:myfitnesspal_client/src/models/food.dart';
 import 'package:myfitnesspal_client/src/requests/food_search_hit.dart';
@@ -61,9 +62,9 @@ final class MfpFoods {
   }
 
   Future<MfpBarcodeResult> byBarcode(String barcode) async {
-    if (barcodeProblem(barcode) case final problem?) {
+    if (_invalidReason(checkBarcode(barcode)) case final reason?) {
       throw MfpBarcodeException(barcode, MfpBarcodeFailure.invalidBarcode, [
-        problem,
+        reason,
       ]);
     }
     final scanned = await _transport.sync(
@@ -94,5 +95,14 @@ final class MfpFoods {
       description: scanned.description,
       brandName: scanned.brandName,
     ),
+  };
+
+  static String? _invalidReason(MfpBarcodeCheck check) => switch (check) {
+    MfpValidBarcode() => null,
+    MfpBarcodeNotDigits() => 'a barcode has digits only',
+    MfpBarcodeWrongLength(:final barcode) =>
+      'a barcode has 8, 12, 13 or 14 digits, not ${barcode.length}',
+    MfpBarcodeWrongCheckDigit(:final actual, :final expected) =>
+      'check digit is $actual, $expected expected',
   };
 }
