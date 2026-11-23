@@ -4,6 +4,7 @@ import 'package:myfitnesspal_client/src/auth/session_cookies.dart';
 import 'package:myfitnesspal_client/src/auth/session_store.dart';
 import 'package:myfitnesspal_client/src/resources/diary.dart';
 import 'package:myfitnesspal_client/src/resources/foods.dart';
+import 'package:myfitnesspal_client/src/resources/measurements.dart';
 import 'package:myfitnesspal_client/src/transport.dart';
 
 final class MyFitnessPalClient {
@@ -40,7 +41,8 @@ final class MyFitnessPalClient {
     this._httpClient, {
     required this._ownsHttpClient,
   }) : diary = MfpDiary(_transport),
-       foods = MfpFoods(_transport);
+       foods = MfpFoods(_transport),
+       measurements = MfpMeasurements(_transport);
 
   static final Uri defaultWebUri = Uri.parse('https://www.myfitnesspal.com');
   static final Uri defaultApiUri = Uri.parse('https://api.myfitnesspal.com');
@@ -55,6 +57,7 @@ final class MyFitnessPalClient {
 
   final MfpDiary diary;
   final MfpFoods foods;
+  final MfpMeasurements measurements;
 
   Future<void> signIn(MfpSessionCookies cookies) => _transport.signIn(cookies);
 

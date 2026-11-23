@@ -1,5 +1,9 @@
 ## Unreleased
 
+- `measurements` reads, logs and removes body weights through
+  `/v2/measurements`: `forDate`, `logWeight` (returns the created
+  `MfpMeasurement`), `remove`. Units are `MfpWeightUnit.kilograms` or
+  `pounds`.
 - `checkBarcode` validates a barcode on the device and returns an
   `MfpBarcodeCheck` (valid with its `MfpBarcodeFormat`, not digits, wrong
   length, wrong check digit with the expected digit). `byBarcode` uses it.

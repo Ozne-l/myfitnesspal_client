@@ -20,10 +20,12 @@ contains no API keys: `mfp-main-js` is the public client id of the website.
 | Session | `signIn` with browser cookies, automatic API tokens, `clearLocalSession` (local only) |
 | Diary | `forDate`, `mealNames`, `addFood`, `remove` |
 | Foods | `search`, `byId`, `byBarcode` |
+| Measurements | `forDate`, `logWeight`, `remove` (body weight through `/v2/measurements`) |
 
 `forDate`, `addFood`, `remove` and `byId` make the same requests as existing
 open-source MyFitnessPal clients that work today. `byBarcode` was checked
-against live responses in October 2026. `search` and `mealNames` have not
+against live responses in October 2026, and the measurements calls in
+November 2026. `search` and `mealNames` have not
 been checked against live responses yet.
 
 ## Install
@@ -118,6 +120,14 @@ cookies; the session stays valid until you sign out in the browser.
 - **Logging is not idempotent.** `addFood` returns the new entry's id; keep it
   if you may need to `remove` the entry. Entries read with `forDate` carry
   their `id` too (it is nullable only because the API does not promise it).
+- **The first weight of the day wins.** `measurements.forDate` keeps
+  returning the first weight saved for a day, even after another
+  `logWeight` for that day. To correct a weight, `remove` the old
+  measurement, then `logWeight` the new value.
+- **Measurement ids are numeric strings** (15 digits). Keep them as strings.
+- **`Weight` or `weight`.** Rows written by the website come back with type
+  `Weight`, rows written through this package with `weight`: compare
+  case-insensitively.
 - **Barcodes go through another door.** The v2 API never returns an
   EAN/UPC, not on diary entries, not on foods, not with `fields[]=all`, and
   its search does not match barcodes. `byBarcode` asks the binary sync
